@@ -2,11 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ========== Modèles (Schemas) ==========
 const variantSchema = new mongoose.Schema({
@@ -44,10 +45,10 @@ const orderSchema = new mongoose.Schema({
 });
 
 const settingSchema = new mongoose.Schema({
-  shopName: { type: String, default: 'Ma Boutique' },
+  shopName: { type: String, default: 'Lorea Boutique' },
   shopLogo: { type: String, default: '' },
   instagramHandle: { type: String, default: '' },
-  description: { type: String, default: '' }
+  description: { type: String, default: 'Votre élégance chez vous' }
 });
 
 const deliveryCostSchema = new mongoose.Schema({
@@ -234,5 +235,11 @@ mongoose.connect(process.env.MONGODB_URI)
   })
   .catch(err => console.error('❌ Erreur MongoDB:', err));
 
+// ========== Pour Vercel (serverless) ==========
+module.exports = app;
+
+// ========== Pour le développement local ==========
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Serveur démarré sur le port ${PORT}`));
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`🚀 Serveur démarré sur le port ${PORT}`));
+}
