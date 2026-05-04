@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lorea Mode - Finaliser commande</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'Playfair Display', serif;
+            background: #faf7f2;
+            color: #4a3b2c;
+            padding: 30px 20px;
+        }
+        
+        .order-card {
+            max-width: 650px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 36px;
+            padding: 35px 30px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.04);
+            border: 1px solid #efe6dc;
+        }
+        
+        .logo-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        
+        .logo-header img {
+            height: 45px;
+            width: auto;
+            border-radius: 50%;
+        }
+        
+        .logo-header span {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            color: #8b6f4c;
+        }
+        
+        h2 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 500;
+            color: #8b6f4c;
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        
+        .product-summary {
+            background: #fefcf8;
+            padding: 18px;
+            border-radius: 24px;
+            margin-bottom: 25px;
+            text-align: center;
+            border: 1px solid #e8e0d5;
+        }
+        
+        .product-name {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: #5e4b35;
+        }
+        
+        .variant-detail {
+            color: #b47c48;
+            margin-top: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+            color: #8b6f4c;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 30px;
+            border: 1px solid #e5d9ce;
+            background: white;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #b47c48;
+        }
+        
+        .total-box {
+            background: #f5efe8;
+            padding: 18px;
+            border-radius: 28px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin: 25px 0;
+            color: #5e4b35;
+        }
+        
+        .total-box span {
+            font-size: 1rem;
+            font-weight: normal;
+            color: #ab947c;
+        }
+        
+        button {
+            background: #b47c48;
+            color: white;
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #9b6539;
+        }
+        
+        .message {
+            margin-top: 18px;
+            padding: 12px;
+            border-radius: 30px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .error {
+            background: #fbeae9;
+            color: #b16158;
+        }
+        
+        .success {
+            background: #e1f0e8;
+            color: #5f7c6b;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 25px;
+        }
+        
+        .back-link a {
+            color: #b47c48;
+            text-decoration: none;
+            border-bottom: 1px solid #e0cdb8;
+            padding-bottom: 2px;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="order-card">
+    <div class="logo-header">
+        <img id="shopLogo" src="" alt="Logo" style="display:none">
+        <span id="shopName">Lorea Mode</span>
+    </div>
+    
+    <h2>✨ Récapitulatif commande</h2>
+    
+    <div id="productPreview" class="product-summary">
+        <div class="product-name">Chargement...</div>
+    </div>
+    
+    <div class="form-group">
+        <label>👤 Nom complet</label>
+        <input type="text" id="customerName" placeholder="Ex: Lina Benali">
+    </div>
+    
+    <div class="form-group">
+        <label>📞 Téléphone</label>
+        <input type="tel" id="phone" placeholder="05XX XX XX XX">
+    </div>
+    
+    <div class="form-group">
+        <label>📍 Wilaya</label>
+        <select id="wilaya"><option value="">-- Sélectionner --</option></select>
+    </div>
+    
+    <div class="form-group">
+        <label> Commune / Baladia</label>
+        <input type="text" id="baladia" placeholder="Ex: Sidi M'Hamed">
+    </div>
+    
+    <div class="form-group">
+        <label> Mode de livraison</label>
+        <select id="deliveryType">
+            <option value="bureau"> Retrait en bureau de poste</option>
+            <option value="domicile"> Livraison à domicile</option>
+        </select>
+    </div>
+    
+    <div class="total-box" id="totalDisplay">
+        Total : 0 DA
+    </div>
+    
+    <div id="messageDiv"></div>
+    
+    <button onclick="submitFinalOrder()">CONFIRMER LA COMMANDE</button>
+    
+    <div class="back-link"><a href="/">← Retour à l'accueil</a></div>
+</div>
+
+<script>
+    let product = null;
+    let selectedVariant = null;
+    let shippingCost = { bureau: 0, domicile: 0 };
+    
+    const wilayasList = ["Adrar","Chlef","Laghouat","Oum El Bouaghi","Batna","Béjaïa","Biskra","Béchar","Blida","Bouira","Tamanrasset","Tébessa","Tlemcen","Tiaret","Tizi Ouzou","Alger","Djelfa","Jijel","Sétif","Saïda","Skikda","Sidi Bel Abbès","Annaba","Guelma","Constantine","Médéa","Mostaganem","M'Sila","Mascara","Ouargla","Oran","El Bayadh","Illizi","Bordj Bou Arreridj","Boumerdès","El Tarf","Tindouf","Tissemsilt","El Oued","Khenchela","Souk Ahras","Tipaza","Mila","Aïn Defla","Naâma","Aïn Témouchent","Ghardaïa","Relizane","Timimoun","Bordj Badji Mokhtar","Ouled Djellal","Béni Abbès","In Salah","In Guezzam","Touggourt","Djanet","El M'Ghair","El Meniaa"];
+    
+    async function loadShopInfo() {
+        try {
+            const res = await fetch('/api/settings');
+            const settings = await res.json();
+            const shopNameSpan = document.getElementById('shopName');
+            const logoImg = document.getElementById('shopLogo');
+            if (shopNameSpan) shopNameSpan.innerText = settings.shopName || 'Lorea Mode';
+            if (logoImg && settings.shopLogo) {
+                logoImg.src = settings.shopLogo;
+                logoImg.style.display = 'block';
+            }
+        } catch(e) { console.error(e); }
+    }
+    
+    async function loadData() {
+        const productId = localStorage.getItem('selectedProductId');
+        const color = localStorage.getItem('selectedColor');
+        const size = localStorage.getItem('selectedSize');
+        const qty = localStorage.getItem('selectedQuantity');
+        if (!productId || !color || !size) { window.location.href = '/'; return; }
+        
+        const res = await fetch(`/api/products/${productId}`);
+        product = await res.json();
+        selectedVariant = product.variants.find(v => v.color === color && v.size === size);
+        document.getElementById('productPreview').innerHTML = `
+            <div class="product-name">${product.name}</div>
+            <div class="variant-detail">🎨 ${color} · 📏 ${size} · Quantité : ${qty}</div>
+        `;
+        
+        wilayasList.forEach(w => { let opt = document.createElement('option'); opt.value = w; opt.textContent = w; document.getElementById('wilaya').appendChild(opt); });
+        document.getElementById('wilaya').addEventListener('change', updateTotal);
+        document.getElementById('deliveryType').addEventListener('change', updateTotal);
+        await updateTotal();
+    }
+    
+    async function updateTotal() {
+        const wil = document.getElementById('wilaya').value;
+        const delivery = document.getElementById('deliveryType').value;
+        if (!wil || !product) return;
+        const res = await fetch(`/api/delivery-costs/${encodeURIComponent(wil)}`);
+        const cost = await res.json();
+        shippingCost = cost;
+        const shipPrice = delivery === 'domicile' ? cost.domicile : cost.bureau;
+        const qty = parseInt(localStorage.getItem('selectedQuantity')) || 1;
+        const total = (product.price * qty) + shipPrice;
+        document.getElementById('totalDisplay').innerHTML = `Total : ${total} DA <span>· (produit: ${product.price * qty} DA + livraison: ${shipPrice} DA)</span>`;
+    }
+    
+    async function submitFinalOrder() {
+        const fullName = document.getElementById('customerName').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const wilaya = document.getElementById('wilaya').value;
+        const baladia = document.getElementById('baladia').value.trim();
+        const deliveryType = document.getElementById('deliveryType').value;
+        const qty = parseInt(localStorage.getItem('selectedQuantity')) || 1;
+        
+        if (!fullName || !phone || !wilaya || !baladia) { showMsg("Tous les champs sont obligatoires", "error"); return; }
+        
+        const resCost = await fetch(`/api/delivery-costs/${encodeURIComponent(wilaya)}`);
+        const cost = await resCost.json();
+        const shipPrice = deliveryType === 'domicile' ? cost.domicile : cost.bureau;
+        const total = (product.price * qty) + shipPrice;
+        
+        const orderData = {
+            items: [{ productId: product._id, color: selectedVariant.color, size: selectedVariant.size, quantity: qty }],
+            customerName: fullName, phone, wilaya, baladia, deliveryType, shippingCost: shipPrice, total
+        };
+        
+        try {
+            const res = await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData) });
+            const data = await res.json();
+            if (data.success) {
+                showMsg("✅ Commande confirmée ! Vous serez contacté(e) très vite.", "success");
+                setTimeout(() => window.location.href = '/', 2800);
+            } else { showMsg("Erreur : " + data.error, "error"); }
+        } catch(e) { showMsg("Erreur réseau", "error"); }
+    }
+    
+    function showMsg(msg, type) { 
+        const div = document.getElementById('messageDiv'); 
+        div.innerHTML = `<div class="message ${type}">${msg}</div>`; 
+        setTimeout(() => div.innerHTML = '', 4000); 
+    }
+    
+    async function init() {
+        await loadShopInfo();
+        await loadData();
+    }
+    
+    init();
+</script>
+</body>
+</html>

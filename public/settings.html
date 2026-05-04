@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paramètres de la boutique</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, 'Segoe UI', Roboto; background: #f1f5f9; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 32px; padding: 25px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); }
+        h1 { color: #1e293b; margin-bottom: 20px; }
+        label { font-weight: 600; display: block; margin: 15px 0 6px; }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 20px; }
+        .upload-zone { border: 2px dashed #cbd5e1; background: #f8fafc; border-radius: 20px; padding: 20px; text-align: center; cursor: pointer; margin-bottom: 15px; }
+        .upload-zone:hover { border-color: #e67e22; background: #fff5ed; }
+        .logo-preview { display: flex; justify-content: center; margin-bottom: 15px; }
+        .logo-preview img { max-width: 100px; max-height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #e67e22; }
+        button { background: #e67e22; color: white; border: none; padding: 14px; border-radius: 40px; width: 100%; margin-top: 20px; font-weight: bold; cursor: pointer; }
+        button:hover { background: #c0392b; }
+        .message { margin-top: 15px; padding: 12px; border-radius: 28px; text-align: center; }
+        .success { background: #d1fae5; color: #065f46; }
+        .error { background: #fee2e2; color: #991b1b; }
+        .preview { margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 24px; text-align: center; }
+        .back-link { display: inline-block; margin-top: 20px; color: #e67e22; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>⚙️ Paramètres de la boutique</h1>
+    
+    <label> Nom de la boutique</label>
+    <input type="text" id="shopName" placeholder="Ex: Lorea Mode">
+    
+    <label> Logo (cliquez pour uploader depuis votre appareil)</label>
+    <div class="upload-zone" onclick="document.getElementById('logoInput').click()">
+         Cliquez pour choisir une photo de logo
+        <input type="file" id="logoInput" accept="image/*" style="display:none">
+    </div>
+    <div id="logoPreviewContainer" class="logo-preview"></div>
+    
+    <label> Instagram (sans @)</label>
+    <input type="text" id="instagramHandle" placeholder="ma_boutique">
+    
+    <label> Description</label>
+    <textarea id="description" rows="3" placeholder="Description de votre boutique..."></textarea>
+    
+    <button onclick="saveSettings()">💾 Sauvegarder</button>
+    
+    <div id="message"></div>
+    <a href="/admin.html" class="back-link">← Retour à l'administration</a>
+</div>
+
+<script>
+    // Configuration Cloudinary
+    const CLOUD_NAME = "du1xstzq6";
+    const UPLOAD_PRESET = "kn_upload";
+    
+    let currentLogoUrl = '';
+    
+    // Upload du logo vers Cloudinary
+    document.getElementById('logoInput').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', UPLOAD_PRESET);
+        
+        try {
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (data.secure_url) {
+                currentLogoUrl = data.secure_url;
+                document.getElementById('shopLogo').value = currentLogoUrl;
+                displayLogoPreview(currentLogoUrl);
+                showMessage("✅ Logo uploadé avec succès !", "success");
+            }
+        } catch(err) {
+            showMessage("❌ Erreur lors de l'upload du logo", "error");
+        }
+    });
+    
+    function displayLogoPreview(url) {
+        const container = document.getElementById('logoPreviewContainer');
+        container.innerHTML = `<img src="${url}" alt="Logo">`;
+    }
+    
+    async function loadSettings() {
+        try {
+            const res = await fetch('/api/settings');
+            const data = await res.json();
+            document.getElementById('shopName').value = data.shopName || 'Lorea Mode';
+            document.getElementById('instagramHandle').value = data.instagramHandle || '';
+            document.getElementById('description').value = data.description || '';
+            
+            if (data.shopLogo) {
+                currentLogoUrl = data.shopLogo;
+                document.getElementById('shopLogo').value = data.shopLogo;
+                displayLogoPreview(data.shopLogo);
+            }
+        } catch(e) {
+            console.error('Erreur chargement settings:', e);
+        }
+    }
+    
+    async function saveSettings() {
+        const logoInput = document.getElementById('shopLogo');
+        if (!logoInput) {
+            // Créer un champ caché pour stocker l'URL du logo
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.id = 'shopLogo';
+            hiddenInput.value = currentLogoUrl;
+            document.querySelector('.container').appendChild(hiddenInput);
+        } else {
+            document.getElementById('shopLogo').value = currentLogoUrl;
+        }
+        
+        const settings = {
+            shopName: document.getElementById('shopName').value,
+            shopLogo: currentLogoUrl,
+            instagramHandle: document.getElementById('instagramHandle').value,
+            description: document.getElementById('description').value
+        };
+        
+        try {
+            const res = await fetch('/api/settings', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(settings)
+            });
+            
+            if (res.ok) {
+                showMessage("✅ Paramètres sauvegardés !", "success");
+            } else {
+                showMessage("❌ Erreur lors de la sauvegarde", "error");
+            }
+        } catch(e) {
+            showMessage("❌ Erreur de connexion", "error");
+        }
+    }
+    
+    function showMessage(msg, type) {
+        const msgDiv = document.getElementById('message');
+        msgDiv.innerHTML = `<div class="message ${type}">${msg}</div>`;
+        setTimeout(() => msgDiv.innerHTML = '', 3000);
+    }
+    
+    // Ajouter un champ caché pour l'URL du logo
+    const hiddenInput = document.createElement('input');
+    hiddenInput.type = 'hidden';
+    hiddenInput.id = 'shopLogo';
+    document.querySelector('.container').appendChild(hiddenInput);
+    
+    loadSettings();
+</script>
+</body>
+</html>

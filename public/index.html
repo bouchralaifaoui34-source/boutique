@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Lorea Boutique - Élégance intemporelle</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Playfair Display', 'Segoe UI', Georgia, serif;
+            background: #faf7f2;
+            color: #4a3b2c;
+        }
+        
+        .header {
+            background: #fffdf9;
+            padding: 25px 30px;
+            text-align: center;
+            border-bottom: 1px solid #e8e0d5;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.02);
+        }
+        
+        .logo-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .logo-area img {
+            height: 60px;
+            width: auto;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 400;
+            letter-spacing: 2px;
+            color: #8b6f4c;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .shop-description {
+            text-align: center;
+            color: #a18a6a;
+            margin-top: 10px;
+            font-style: italic;
+            font-size: 0.95rem;
+        }
+        
+        .instagram-link {
+            margin-top: 12px;
+        }
+        
+        .instagram-link a {
+            color: #8b6f4c;
+            text-decoration: none;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #e0d5c8;
+            padding-bottom: 3px;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 35px;
+            max-width: 1300px;
+            margin: 50px auto;
+            padding: 0 25px;
+        }
+        
+        .product-card {
+            background: #ffffff;
+            border-radius: 18px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.35s ease;
+            box-shadow: 0 5px 12px rgba(0,0,0,0.03);
+            border: 1px solid #efe6dc;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 30px -12px rgba(139, 111, 76, 0.15);
+            border-color: #e0cdb8;
+        }
+        
+        .product-card img {
+            width: 100%;
+            height: 320px;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .product-card:hover img {
+            transform: scale(1.02);
+        }
+        
+        .product-info {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .product-name {
+            font-size: 1rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            color: #5e4b35;
+            margin-bottom: 8px;
+        }
+        
+        .product-price {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #b47c48;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        
+        .variant-badge {
+            display: inline-block;
+            background: #f3ede5;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            color: #8b6f4c;
+            margin-top: 10px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 35px 20px;
+            background: #f5efe8;
+            color: #ab947c;
+            font-size: 0.8rem;
+            margin-top: 40px;
+            border-top: 1px solid #e8dfd4;
+        }
+        
+        @media (max-width: 680px) {
+            h1 { font-size: 1.5rem; }
+            .products-grid { gap: 20px; padding: 0 15px; margin: 30px auto; }
+            .product-card img { height: 260px; }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="header" id="header">
+    <div class="logo-area">
+        <img id="shopLogo" src="" alt="Logo" style="display:none">
+        <h1 id="shopName">Lorea Boutique</h1>
+    </div>
+    <div class="shop-description" id="shopDesc"></div>
+    <div class="instagram-link" id="instagramBadge"></div>
+</div>
+
+<div class="products-grid" id="products">
+    <div style="text-align:center; padding: 60px; color: #ab947c;">Chargement...</div>
+</div>
+
+<footer>
+    ✨ Livraison en Algérie · Paiement à la livraison ✨
+</footer>
+
+<script>
+    let settings = {};
+    
+    async function loadSettings() {
+        try {
+            const res = await fetch('/api/settings');
+            settings = await res.json();
+            // Si l'utilisateur a déjà changé le nom via settings.html, on l'utilise
+            // Sinon, on affiche "Lorea Boutique" par défaut
+            document.getElementById('shopName').textContent = settings.shopName || 'Lorea Boutique';
+            document.title = settings.shopName || 'Lorea Boutique';
+            if (settings.shopLogo) {
+                const logo = document.getElementById('shopLogo');
+                logo.src = settings.shopLogo;
+                logo.style.display = 'block';
+            }
+            document.getElementById('shopDesc').textContent = settings.description || 'Votre élégance chez vous';
+            if (settings.instagramHandle) {
+                const handle = settings.instagramHandle.replace('@', '');
+                document.getElementById('instagramBadge').innerHTML = `<a href="https://instagram.com/${handle}" target="_blank">📷 @${handle}</a>`;
+            }
+        } catch(e) { console.error(e); }
+    }
+    
+    async function loadProducts() {
+        try {
+            const res = await fetch('/api/products');
+            const products = await res.json();
+            const container = document.getElementById('products');
+            if (!products.length) {
+                container.innerHTML = '<div style="text-align:center; padding:60px; color:#ab947c;">Aucun produit pour le moment</div>';
+                return;
+            }
+            container.innerHTML = products.map(p => {
+                let colorsSummary = '';
+                if (p.variants && p.variants.length) {
+                    const uniqueColors = [...new Set(p.variants.map(v => v.color))];
+                    colorsSummary = `<div class="variant-badge">🎨 ${uniqueColors.slice(0,2).join(', ')}${uniqueColors.length > 2 ? '...' : ''}</div>`;
+                }
+                return `
+                    <div class="product-card" onclick="location.href='/product.html?id=${p._id}'">
+                        <img src="${p.images && p.images[0] ? p.images[0] : 'https://placehold.co/400x500?text=Lorea'}" alt="${p.name}">
+                        <div class="product-info">
+                            <div class="product-name">${escapeHtml(p.name)}</div>
+                            <div class="product-price">${p.price} DA</div>
+                            ${colorsSummary}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch(e) {
+            document.getElementById('products').innerHTML = '<div style="text-align:center; padding:60px; color:#ab947c;">Erreur de chargement</div>';
+        }
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    loadSettings();
+    loadProducts();
+</script>
+</body>
+</html>

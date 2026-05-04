@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Ajouter un produit</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, 'Segoe UI', Roboto; background: #f1f5f9; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 32px; padding: 25px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); }
+        h1, h2 { color: #1e293b; margin-bottom: 15px; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #cbd5e1; border-radius: 16px; }
+        .upload-zone { border: 2px dashed #cbd5e1; padding: 30px; text-align: center; cursor: pointer; border-radius: 20px; margin-bottom: 20px; background: #f8fafc; }
+        .upload-zone:hover { border-color: #e67e22; background: #fff5ed; }
+        .images-preview { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        .img-preview { position: relative; width: 80px; height: 80px; border-radius: 12px; overflow: hidden; }
+        .img-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .remove-img { position: absolute; top: -8px; right: -8px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; }
+        .color-block { background: #f1f5f9; padding: 15px; border-radius: 20px; margin-bottom: 15px; }
+        .size-row { display: flex; gap: 10px; margin-top: 10px; align-items: center; }
+        .size-row input { flex: 1; margin-bottom: 0; }
+        button { background: #e67e22; color: white; border: none; padding: 12px 20px; border-radius: 40px; cursor: pointer; font-weight: bold; margin: 5px; }
+        .btn-small { background: #10b981; padding: 8px 16px; font-size: 0.8rem; }
+        .btn-remove { background: #ef4444; }
+        .message { margin-top: 15px; padding: 12px; border-radius: 20px; text-align: center; }
+        .success { background: #d1fae5; color: #065f46; }
+        .error { background: #fee2e2; color: #991b1b; }
+        .products-list { margin-top: 50px; padding-top: 30px; border-top: 2px solid #e2e8f0; }
+        .product-item { background: #f8fafc; border-radius: 20px; padding: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; margin-bottom: 12px; }
+        .product-info { display: flex; align-items: center; gap: 15px; }
+        .product-thumb { width: 55px; height: 55px; object-fit: cover; border-radius: 12px; }
+        .product-name { font-weight: 600; color: #1e293b; }
+        .product-price { font-size: 0.85rem; color: #b47c48; }
+        .product-variants { font-size: 0.75rem; color: #64748b; }
+        .delete-btn { background: #ef4444; color: white; border: none; padding: 8px 18px; border-radius: 40px; cursor: pointer; font-weight: 500; transition: 0.2s; }
+        .delete-btn:hover { background: #dc2626; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>➕ Ajouter un produit</h1>
+
+    <input type="text" id="productName" placeholder="Nom du produit">
+    <input type="number" id="productPrice" placeholder="Prix (DA)">
+    <textarea id="productDesc" rows="3" placeholder="Description du produit"></textarea>
+
+    <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+        📸 Cliquez pour ajouter des photos (plusieurs possibles)
+        <input type="file" id="fileInput" multiple accept="image/*" style="display:none">
+    </div>
+    <div id="imagesPreview" class="images-preview"></div>
+
+    <h2>🎨 Couleurs, tailles et stock</h2>
+    <div id="colorsContainer"></div>
+    
+    <button style="background:#10b981; margin-bottom:20px" onclick="addColor()">+ Ajouter une couleur</button>
+
+    <button style="background:#e67e22; width:100%" onclick="submitProduct()">💾 Enregistrer le produit</button>
+    <div id="message"></div>
+
+    <!-- ========== Section liste des produits avec bouton supprimer ========== -->
+    <div class="products-list">
+        <h2>📋 Liste des produits</h2>
+        <div id="productsList"></div>
+    </div>
+</div>
+
+<script>
+    // Configuration Cloudinary
+    const CLOUD_NAME = "du1xstzq6";
+    const UPLOAD_PRESET = "kn_upload";
+    
+    let uploadedImages = [];
+    let colors = []; // [{ name: "Noir", sizes: [{ size: "M", stock: 10 }, ...] }]
+    
+    // Upload des images multiples
+    document.getElementById('fileInput').addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files);
+        for (const file of files) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', UPLOAD_PRESET);
+            try {
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.secure_url) {
+                    uploadedImages.push(data.secure_url);
+                }
+            } catch(err) { console.error(err); }
+        }
+        renderImagesPreview();
+        document.getElementById('fileInput').value = '';
+    });
+    
+    function renderImagesPreview() {
+        const container = document.getElementById('imagesPreview');
+        container.innerHTML = uploadedImages.map((url, i) => `
+            <div class="img-preview">
+                <img src="${url}">
+                <button class="remove-img" onclick="removeImage(${i})">×</button>
+            </div>
+        `).join('');
+    }
+    
+    function removeImage(index) {
+        uploadedImages.splice(index, 1);
+        renderImagesPreview();
+    }
+    
+    function addColor(colorName = '', sizes = []) {
+        colors.push({ name: colorName, sizes: sizes.length ? sizes : [{ size: 'M', stock: 0 }] });
+        renderColors();
+    }
+    
+    function removeColor(index) {
+        colors.splice(index, 1);
+        renderColors();
+    }
+    
+    function addSize(colorIndex) {
+        colors[colorIndex].sizes.push({ size: 'XL', stock: 0 });
+        renderColors();
+    }
+    
+    function removeSize(colorIndex, sizeIndex) {
+        colors[colorIndex].sizes.splice(sizeIndex, 1);
+        renderColors();
+    }
+    
+    function updateColorName(index, value) { colors[index].name = value; }
+    function updateSizeStock(colorIndex, sizeIndex, field, value) {
+        colors[colorIndex].sizes[sizeIndex][field] = field === 'stock' ? parseInt(value) || 0 : value;
+    }
+    
+    function renderColors() {
+        const container = document.getElementById('colorsContainer');
+        container.innerHTML = '';
+        colors.forEach((color, idx) => {
+            const colorDiv = document.createElement('div');
+            colorDiv.className = 'color-block';
+            colorDiv.innerHTML = `
+                <div style="display:flex; gap:10px; margin-bottom:10px">
+                    <input type="text" placeholder="Couleur (ex: Noir, Rouge, Bleu)" value="${color.name}" 
+                           onchange="updateColorName(${idx}, this.value)" style="flex:1">
+                    <button onclick="removeColor(${idx})" style="background:#ef4444; padding:8px 16px">🗑️ Supprimer la couleur</button>
+                </div>
+                <div id="sizes-${idx}">
+                    ${color.sizes.map((size, sidx) => `
+                        <div class="size-row">
+                            <input type="text" placeholder="Taille (S, M, L, XL...)" value="${size.size}"
+                                   onchange="updateSizeStock(${idx}, ${sidx}, 'size', this.value)">
+                            <input type="number" placeholder="Stock" value="${size.stock}"
+                                   onchange="updateSizeStock(${idx}, ${sidx}, 'stock', this.value)">
+                            <button onclick="removeSize(${idx}, ${sidx})" style="background:#ef4444; padding:5px 10px">✖</button>
+                        </div>
+                    `).join('')}
+                </div>
+                <button onclick="addSize(${idx})" style="background:#10b981; margin-top:10px; padding:8px 16px">+ Ajouter une taille</button>
+            `;
+            container.appendChild(colorDiv);
+        });
+    }
+    
+    async function submitProduct() {
+        const name = document.getElementById('productName').value.trim();
+        const price = parseFloat(document.getElementById('productPrice').value);
+        const description = document.getElementById('productDesc').value;
+        
+        if (!name || !price) { showMessage("Nom et prix requis", "error"); return; }
+        if (uploadedImages.length === 0) { showMessage("Ajoutez au moins une photo", "error"); return; }
+        if (colors.length === 0 || !colors.some(c => c.name && c.sizes.length > 0)) {
+            showMessage("Ajoutez au moins une couleur avec une taille", "error"); return;
+        }
+        
+        const variants = [];
+        for (const color of colors) {
+            for (const size of color.sizes) {
+                if (color.name && size.size) variants.push({ color: color.name, size: size.size, stock: size.stock || 0 });
+            }
+        }
+        
+        const product = { name, price, images: uploadedImages, description, variants };
+        try {
+            const res = await fetch('/api/products', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(product)
+            });
+            const data = await res.json();
+            if (res.ok) { 
+                showMessage("✅ Produit ajouté !", "success"); 
+                setTimeout(() => window.location.reload(), 1500);
+            } else { showMessage("❌ Erreur: " + (data.error || "Serveur"), "error"); }
+        } catch(e) { showMessage("❌ Erreur de connexion", "error"); }
+    }
+    
+    function showMessage(msg, type) {
+        const div = document.getElementById('message');
+        div.innerHTML = `<div class="message ${type}">${msg}</div>`;
+        setTimeout(() => div.innerHTML = '', 4000);
+    }
+    
+    // ========== Fonctions pour afficher et supprimer les produits ==========
+    async function loadProductsForAdmin() {
+        try {
+            const res = await fetch('/api/products');
+            const products = await res.json();
+            const container = document.getElementById('productsList');
+            
+            if (!products.length) {
+                container.innerHTML = '<p style="color: #94a3b8; text-align: center; padding: 20px;">Aucun produit pour le moment</p>';
+                return;
+            }
+            
+            container.innerHTML = products.map(p => `
+                <div class="product-item">
+                    <div class="product-info">
+                        <img class="product-thumb" src="${p.images && p.images[0] ? p.images[0] : 'https://placehold.co/60x60'}" alt="${p.name}">
+                        <div>
+                            <div class="product-name">${p.name}</div>
+                            <div class="product-price">${p.price} DA</div>
+                            <div class="product-variants">${p.variants ? p.variants.length : 0} variante(s)</div>
+                        </div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteProduct('${p._id}')">🗑️ Supprimer</button>
+                </div>
+            `).join('');
+        } catch(e) {
+            console.error('Erreur chargement produits:', e);
+        }
+    }
+    
+    async function deleteProduct(id) {
+        if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer ce produit ? Action irréversible.')) return;
+        try {
+            const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                alert('✅ Produit supprimé avec succès');
+                loadProductsForAdmin();
+            } else {
+                const data = await res.json();
+                alert('❌ Erreur: ' + (data.error || 'Échec de la suppression'));
+            }
+        } catch(e) {
+            alert('❌ Erreur de connexion au serveur');
+        }
+    }
+    
+    // Ajouter une première couleur par défaut
+    addColor('Noir', [{ size: 'M', stock: 5 }]);
+    
+    // Charger la liste des produits au chargement de la page
+    loadProductsForAdmin();
+</script>
+</body>
+</html>

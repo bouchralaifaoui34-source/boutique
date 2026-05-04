@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des frais de livraison</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, 'Segoe UI', Roboto;
+            background: #f1f5f9;
+            padding: 24px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 32px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        h1, h2 { color: #0f172a; margin-bottom: 20px; }
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            color: #334155;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        button {
+            background: #e67e22;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button.cancel { background: #94a3b8; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: right;
+            padding: 12px 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th { background: #f8fafc; font-weight: 600; }
+        .edit-btn, .delete-btn {
+            padding: 6px 14px;
+            font-size: 0.8rem;
+            margin: 0 4px;
+        }
+        .edit-btn { background: #3b82f6; }
+        .delete-btn { background: #ef4444; }
+        .message {
+            padding: 12px;
+            border-radius: 28px;
+            margin-top: 16px;
+            text-align: center;
+        }
+        .success { background: #d1fae5; color: #065f46; }
+        .error { background: #fee2e2; color: #991b1b; }
+        .wilaya-select {
+            max-width: 250px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #e67e22;
+            text-decoration: none;
+        }
+        @media (max-width: 700px) {
+            .form-row { flex-direction: column; }
+            .wilaya-select { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <h1>🚚 Gestion des frais de livraison</h1>
+        <p>Modifiez les prix pour chaque wilaya (Bureau de poste / Domicile).</p>
+    </div>
+
+    <div class="card">
+        <h2>➕ Ajouter / Modifier une wilaya</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Wilaya</label>
+                <select id="wilayaSelect" class="wilaya-select">
+                    <option value="">-- Sélectionner --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label> Bureau de poste (DA)</label>
+                <input type="number" id="bureauPrice" placeholder="Prix livraison bureau" value="300">
+            </div>
+            <div class="form-group">
+                <label> Domicile (DA)</label>
+                <input type="number" id="domicilePrice" placeholder="Prix livraison domicile" value="600">
+            </div>
+            <div class="form-group">
+                <button id="saveBtn">💾 Enregistrer</button>
+                <button id="cancelBtn" class="cancel" style="background:#94a3b8;">Annuler</button>
+            </div>
+        </div>
+        <div id="formMessage"></div>
+    </div>
+
+    <div class="card">
+        <h2>📋 Liste des wilayas et tarifs</h2>
+        <div style="overflow-x: auto;">
+            <table id="deliveryTable">
+                <thead>
+                    <tr><th>Wilaya</th><th>Bureau (DA)</th><th>Domicile (DA)</th><th>Actions</th></tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="4">Chargement...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <a href="/admin.html" class="back-link">← Retour à l'administration</a>
+</div>
+
+<script>
+    let currentEditWilaya = null;
+
+    // Charger la liste des wilayas (58 wilayas + les prix existants)
+    async function loadWilayasList() {
+        // Liste complète des 58 wilayas d'Algérie
+        const allWilayas = [
+            "Adrar", "Chlef", "Laghouat", "Oum El Bouaghi", "Batna", "Béjaïa", "Biskra", "Béchar", "Blida", "Bouira",
+            "Tamanrasset", "Tébessa", "Tlemcen", "Tiaret", "Tizi Ouzou", "Alger", "Djelfa", "Jijel", "Sétif", "Saïda",
+            "Skikda", "Sidi Bel Abbès", "Annaba", "Guelma", "Constantine", "Médéa", "Mostaganem", "M'Sila", "Mascara",
+            "Ouargla", "Oran", "El Bayadh", "Illizi", "Bordj Bou Arreridj", "Boumerdès", "El Tarf", "Tindouf", "Tissemsilt",
+            "El Oued", "Khenchela", "Souk Ahras", "Tipaza", "Mila", "Aïn Defla", "Naâma", "Aïn Témouchent", "Ghardaïa",
+            "Relizane", "Timimoun", "Bordj Badji Mokhtar", "Ouled Djellal", "Béni Abbès", "In Salah", "In Guezzam",
+            "Touggourt", "Djanet", "El M'Ghair", "El Meniaa"
+        ];
+        
+        // Récupérer les prix existants depuis la base
+        const res = await fetch('/api/delivery-costs');
+        const existingCosts = await res.json();
+        
+        // Créer une map des prix existants
+        const costMap = {};
+        existingCosts.forEach(c => { costMap[c.wilaya] = c; });
+        
+        // Remplir le select
+        const select = document.getElementById('wilayaSelect');
+        select.innerHTML = '<option value="">-- Sélectionner --</option>';
+        allWilayas.forEach(w => {
+            const option = document.createElement('option');
+            option.value = w;
+            option.textContent = w;
+            select.appendChild(option);
+        });
+        
+        // Afficher le tableau avec tous les prix
+        displayTable(allWilayas, costMap);
+    }
+    
+    function displayTable(wilayasList, costMap) {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        wilayasList.forEach(wilaya => {
+            const data = costMap[wilaya] || { bureau: 300, domicile: 600 };
+            const row = `
+                <tr>
+                    <td><strong>${wilaya}</strong></td>
+                    <td>${data.bureau} DA</td>
+                    <td>${data.domicile} DA</td>
+                    <td>
+                        <button class="edit-btn" onclick="editWilaya('${wilaya}', ${data.bureau}, ${data.domicile})">✏️ Modifier</button>
+                        <button class="delete-btn" onclick="deleteWilaya('${wilaya}')">🗑️ Supprimer</button>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+    }
+    
+    async function loadAndRefreshTable() {
+        const res = await fetch('/api/delivery-costs');
+        const existingCosts = await res.json();
+        const costMap = {};
+        existingCosts.forEach(c => { costMap[c.wilaya] = c; });
+        
+        // Récupérer la liste complète des wilayas (on peut la recréer ou la garder)
+        const allWilayas = Array.from(document.getElementById('wilayaSelect').options)
+            .filter(opt => opt.value !== '')
+            .map(opt => opt.value);
+        displayTable(allWilayas, costMap);
+    }
+    
+    window.editWilaya = function(wilaya, bureau, domicile) {
+        document.getElementById('wilayaSelect').value = wilaya;
+        document.getElementById('bureauPrice').value = bureau;
+        document.getElementById('domicilePrice').value = domicile;
+        currentEditWilaya = wilaya;
+        document.getElementById('formMessage').innerHTML = '';
+    };
+    
+    window.deleteWilaya = async function(wilaya) {
+        if (!confirm(`Supprimer les frais personnalisés pour ${wilaya} ? (les prix par défaut 300/600 seront appliqués)`)) return;
+        const res = await fetch(`/api/delivery-costs/${encodeURIComponent(wilaya)}`, { method: 'DELETE' });
+        if (res.ok) {
+            showMessage(`✅ ${wilaya} réinitialisé aux prix par défaut`, 'success');
+            loadAndRefreshTable();
+        } else {
+            showMessage("❌ Erreur lors de la suppression", 'error');
+        }
+    };
+    
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+        const wilaya = document.getElementById('wilayaSelect').value;
+        const bureau = parseInt(document.getElementById('bureauPrice').value);
+        const domicile = parseInt(document.getElementById('domicilePrice').value);
+        
+        if (!wilaya) {
+            showMessage("Veuillez sélectionner une wilaya", 'error');
+            return;
+        }
+        if (isNaN(bureau) || isNaN(domicile) || bureau < 0 || domicile < 0) {
+            showMessage("Les prix doivent être des nombres valides", 'error');
+            return;
+        }
+        
+        const res = await fetch('/api/delivery-costs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ wilaya, bureau, domicile })
+        });
+        
+        if (res.ok) {
+            showMessage(`✅ Tarifs pour ${wilaya} enregistrés (Bureau: ${bureau} DA / Domicile: ${domicile} DA)`, 'success');
+            document.getElementById('wilayaSelect').value = '';
+            document.getElementById('bureauPrice').value = 300;
+            document.getElementById('domicilePrice').value = 600;
+            currentEditWilaya = null;
+            loadAndRefreshTable();
+        } else {
+            showMessage("❌ Erreur lors de l'enregistrement", 'error');
+        }
+    });
+    
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+        document.getElementById('wilayaSelect').value = '';
+        document.getElementById('bureauPrice').value = 300;
+        document.getElementById('domicilePrice').value = 600;
+        currentEditWilaya = null;
+        document.getElementById('formMessage').innerHTML = '';
+    });
+    
+    function showMessage(msg, type) {
+        const div = document.getElementById('formMessage');
+        div.innerHTML = `<div class="message ${type}">${msg}</div>`;
+        setTimeout(() => div.innerHTML = '', 4000);
+    }
+    
+    loadWilayasList();
+</script>
+</body>
+</html>

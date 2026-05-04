@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lorea Mode - Fiche produit</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', 'Playfair Display', Georgia, serif;
+            background: #faf7f2;
+            color: #4a3b2c;
+        }
+        
+        .header-mini {
+            max-width: 1100px;
+            margin: 20px auto 0;
+            padding: 0 20px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #efe6dc;
+        }
+        
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-area img {
+            height: 45px;
+            width: auto;
+            border-radius: 50%;
+        }
+        
+        .logo-area span {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            color: #8b6f4c;
+        }
+        
+        .header-mini a {
+            color: #b47c48;
+            text-decoration: none;
+            border-bottom: 1px solid #e0cdb8;
+            padding-bottom: 3px;
+        }
+        
+        .product-container {
+            max-width: 1100px;
+            margin: 30px auto;
+            background: #ffffff;
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .gallery {
+            flex: 1;
+            min-width: 280px;
+            background: #fefcf8;
+            padding: 25px;
+        }
+        
+        .main-image {
+            width: 100%;
+            height: 450px;
+            object-fit: cover;
+            border-radius: 24px;
+            margin-bottom: 15px;
+        }
+        
+        .thumbnails {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .thumb {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 16px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.2s;
+        }
+        
+        .thumb.active {
+            border-color: #b47c48;
+        }
+        
+        .info {
+            flex: 1;
+            padding: 40px 35px;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 500;
+            color: #5e4b35;
+            margin-bottom: 12px;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .price {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #b47c48;
+            margin: 20px 0;
+        }
+        
+        .description {
+            color: #7a6852;
+            line-height: 1.6;
+            margin: 20px 0;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #efe6dc;
+        }
+        
+        .selector-group {
+            margin: 25px 0;
+        }
+        
+        .selector-group label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 12px;
+            color: #8b6f4c;
+            letter-spacing: 0.5px;
+        }
+        
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .option-btn {
+            padding: 10px 24px;
+            border: 1.5px solid #e5d9ce;
+            border-radius: 60px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            color: #5e4b35;
+        }
+        
+        .option-btn.selected {
+            background: #5e4b35;
+            color: white;
+            border-color: #5e4b35;
+        }
+        
+        .option-btn.disabled {
+            opacity: 0.4;
+            background: #f3ede5;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+        
+        .quantity {
+            margin: 25px 0;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .quantity input {
+            width: 80px;
+            padding: 10px;
+            border-radius: 40px;
+            border: 1.5px solid #e5d9ce;
+            text-align: center;
+            font-size: 1rem;
+        }
+        
+        .btn-order {
+            background: #b47c48;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 15px;
+        }
+        
+        .btn-order:hover {
+            background: #9b6539;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin: 30px auto;
+        }
+        
+        .back-link a {
+            color: #b47c48;
+            text-decoration: none;
+            border-bottom: 1px solid #e0cdb8;
+            padding-bottom: 3px;
+        }
+        
+        @media (max-width: 800px) {
+            .product-container { flex-direction: column; margin: 20px; }
+            .main-image { height: 320px; }
+            .info { padding: 25px; }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="header-mini">
+    <div class="logo-area">
+        <img id="shopLogo" src="" alt="Logo" style="display:none">
+        <span id="shopName">Lorea Mode</span>
+    </div>
+    <a href="/">Accueil</a>
+</div>
+
+<div class="product-container">
+    <div class="gallery">
+        <img id="mainImage" class="main-image" src="https://placehold.co/600x450?text=Lorea">
+        <div id="thumbnails" class="thumbnails"></div>
+    </div>
+    <div class="info">
+        <h1 id="productName">Chargement...</h1>
+        <div class="price" id="productPrice">0 DA</div>
+        <div class="description" id="productDesc"></div>
+        
+        <div class="selector-group">
+            <label> Choisissez la couleur</label>
+            <div id="colorOptions" class="options"></div>
+        </div>
+        
+        <div class="selector-group">
+            <label> Choisissez la taille</label>
+            <div id="sizeOptions" class="options"></div>
+        </div>
+        
+        <div class="quantity">
+            <label>Quantité :</label>
+            <input type="number" id="quantity" min="1" value="1">
+        </div>
+        
+        <button class="btn-order" id="orderBtn">COMMANDER MAINTENANT</button>
+    </div>
+</div>
+<div class="back-link"><a href="/">← Retour à l'accueil</a></div>
+
+<script>
+    let product = null, selectedColor = null, selectedSize = null;
+    let stockMap = {};
+    let currentImages = [];
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+    
+    async function loadShopInfo() {
+        try {
+            const res = await fetch('/api/settings');
+            const settings = await res.json();
+            const shopNameSpan = document.getElementById('shopName');
+            const logoImg = document.getElementById('shopLogo');
+            if (shopNameSpan) shopNameSpan.innerText = settings.shopName || 'Lorea Mode';
+            if (logoImg && settings.shopLogo) {
+                logoImg.src = settings.shopLogo;
+                logoImg.style.display = 'block';
+            }
+        } catch(e) { console.error(e); }
+    }
+    
+    async function loadProduct() {
+        if (!productId) { window.location.href = '/'; return; }
+        const res = await fetch(`/api/products/${productId}`);
+        product = await res.json();
+        document.getElementById('productName').innerText = product.name;
+        document.getElementById('productPrice').innerText = product.price + ' DA';
+        document.getElementById('productDesc').innerText = product.description || 'Pièce unique, fabrication soignée.';
+        currentImages = product.images || [];
+        if (currentImages.length) document.getElementById('mainImage').src = currentImages[0];
+        renderThumbnails();
+        
+        product.variants.forEach(v => {
+            if (!stockMap[v.color]) stockMap[v.color] = {};
+            stockMap[v.color][v.size] = v.stock;
+        });
+        const colors = [...new Set(product.variants.map(v => v.color))];
+        renderColorOptions(colors);
+    }
+    
+    function renderThumbnails() {
+        const container = document.getElementById('thumbnails');
+        container.innerHTML = currentImages.map((url, i) => `
+            <img src="${url}" class="thumb ${i === 0 ? 'active' : ''}" onclick="changeImage(${i})">
+        `).join('');
+    }
+    
+    function changeImage(index) {
+        document.getElementById('mainImage').src = currentImages[index];
+        document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === index));
+    }
+    
+    function renderColorOptions(colors) {
+        const container = document.getElementById('colorOptions');
+        container.innerHTML = '';
+        colors.forEach(col => {
+            const btn = document.createElement('div');
+            btn.className = 'option-btn';
+            btn.innerText = col;
+            btn.onclick = () => {
+                selectedColor = col;
+                document.querySelectorAll('#colorOptions .option-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                renderSizeOptions(col);
+            };
+            container.appendChild(btn);
+        });
+    }
+    
+    function renderSizeOptions(color) {
+        const sizes = Object.keys(stockMap[color] || {}).filter(sz => stockMap[color][sz] > 0);
+        const container = document.getElementById('sizeOptions');
+        container.innerHTML = '';
+        if (sizes.length === 0) {
+            container.innerHTML = '<div style="color:#b47c48; font-style:italic;">Aucune taille disponible pour cette couleur</div>';
+            return;
+        }
+        sizes.forEach(sz => {
+            const stock = stockMap[color][sz];
+            const btn = document.createElement('div');
+            btn.className = 'option-btn';
+            btn.innerText = `${sz} (${stock} disponible${stock > 1 ? 's' : ''})`;
+            btn.onclick = () => {
+                selectedSize = sz;
+                document.querySelectorAll('#sizeOptions .option-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                document.getElementById('quantity').max = stock;
+            };
+            container.appendChild(btn);
+        });
+    }
+    
+    document.getElementById('orderBtn').addEventListener('click', () => {
+        if (!selectedColor) { alert("Veuillez choisir une couleur"); return; }
+        if (!selectedSize) { alert("Veuillez choisir une taille"); return; }
+        const qty = parseInt(document.getElementById('quantity').value);
+        const available = stockMap[selectedColor][selectedSize];
+        if (qty > available) { alert(`Stock insuffisant. Disponible : ${available}`); return; }
+        
+        localStorage.setItem('selectedProductId', productId);
+        localStorage.setItem('selectedColor', selectedColor);
+        localStorage.setItem('selectedSize', selectedSize);
+        localStorage.setItem('selectedQuantity', qty);
+        window.location.href = '/order.html';
+    });
+    
+    async function init() {
+        await loadShopInfo();
+        await loadProduct();
+    }
+    
+    init();
+</script>
+</body>
+</html>
